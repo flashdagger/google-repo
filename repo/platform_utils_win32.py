@@ -16,7 +16,7 @@
 
 import errno
 
-from pyversion import is_python3
+from repo.pyversion import is_python3
 from ctypes import WinDLL, get_last_error, FormatError, WinError, addressof
 from ctypes import c_buffer
 from ctypes.wintypes import BOOL, BOOLEAN, LPCWSTR, DWORD, HANDLE
