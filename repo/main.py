@@ -30,6 +30,8 @@ import shlex
 import sys
 import textwrap
 import time
+from pathlib import Path
+from shutil import which
 
 from repo.pyversion import is_python3
 if is_python3():
@@ -596,6 +598,15 @@ def _MkRepoDir(repodir):
       sys.exit(1)
 
 def _Main(argv):
+  # on windows we need to locate the POSIX tools
+  if sys.platform.startswith("win") and not which("less"):
+    git = which("git")
+    assert git, "'git' command not found in Path"
+    bin = Path(git).parents[1] / "usr/bin"
+    assert bin.exists(), f"Expected POSIX tools in {bin}"
+    os.environ["PATH"] += os.pathsep + str(bin)
+    assert which("less"), bin
+
   result = 0
   repodir = _FindRepo()
   if repodir is None:
