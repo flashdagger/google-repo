@@ -35,9 +35,7 @@ def RunPager(globalConfig):
   if pager == '' or pager == 'cat':
     return
 
-  if platform_utils.isWindows():
-    _PipePager(pager)
-  else:
+  if not platform_utils.isWindows():
     _ForkPager(pager)
 
 
