@@ -2903,8 +2903,7 @@ class Project(object):
                   self.relpath, name)
         continue
       try:
-        platform_utils.symlink(
-            os.path.relpath(stock_hook, os.path.dirname(dst)), dst)
+        platform_utils.symlink(stock_hook, dst)
       except OSError as e:
         if e.errno == errno.EPERM:
           try:
