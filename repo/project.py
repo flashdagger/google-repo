@@ -3640,6 +3640,7 @@ class RepoSetupPyProject:
     self.remote = RemoteSpec('gitrepo', url='setup.py')
     self.bare_git = _FakeBareGit()
     self.config = GitConfig.ForUser()
+    self.config._cache["branch.pypi.merge"] = "refs/heads/pypi"
 
   def GetRemote(self, name):
     return self.remote
@@ -3659,4 +3660,6 @@ class RepoSetupPyProject:
     return "pypi"
 
   def GetBranch(self, name):
-    return self.config.GetBranch(name)
+    branch = self.config.GetBranch(name)
+    branch.merge = f"refs/heads/{name}"
+    return branch
