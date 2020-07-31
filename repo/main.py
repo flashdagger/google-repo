@@ -30,6 +30,7 @@ import shlex
 import sys
 import textwrap
 import time
+import winreg
 from pathlib import Path
 from shutil import which
 
@@ -606,6 +607,22 @@ def _Main(argv):
     assert bin.exists(), f"Expected POSIX tools in {bin}"
     os.environ["PATH"] += os.pathsep + str(bin)
     assert which("less"), bin
+  if sys.platform.startswith("win"):
+    reg_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
+    reg_name = "AllowDevelopmentWithoutDevLicense"
+    reg_value = 0
+    try:
+      with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, reg_path) as key:
+        reg_value, _ = winreg.QueryValueEx(key, reg_name)
+    except(FileNotFoundError):
+      pass
+    finally:
+      if reg_value == 0:
+        print(
+          "NOTE: Windows developer mode is disabled. Therefore to create symlinks you need administrator privileges.\n"
+          f"      However, you can set 'HKLM\\{reg_path}\\{reg_name}' to 1 to enable it.",
+          file=sys.stderr
+        )
 
   result = 0
   repodir = _FindRepo()
