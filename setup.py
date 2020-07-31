@@ -19,7 +19,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(
-  name="gitrepo",
+  name="gitrepo-hagl",
   version="2.8.0",
   packages=find_packages(),
 
