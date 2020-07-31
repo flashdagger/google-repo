@@ -30,7 +30,6 @@ import shlex
 import sys
 import textwrap
 import time
-import winreg
 from pathlib import Path
 from shutil import which
 
@@ -600,14 +599,15 @@ def _MkRepoDir(repodir):
 
 def _Main(argv):
   # on windows we need to locate the POSIX tools
-  if sys.platform.startswith("win") and not which("less"):
+  if sys.platform.startswith("win"):
     git = which("git")
     assert git, "'git' command not found in Path"
     bin = Path(git).parents[1] / "usr/bin"
-    assert bin.exists(), f"Expected POSIX tools in {bin}"
-    os.environ["PATH"] += os.pathsep + str(bin)
-    assert which("less"), bin
+    if bin.exists() and str(bin) not in os.environ["PATH"]:
+      os.environ["PATH"] += os.pathsep + str(bin)
   if sys.platform.startswith("win"):
+    import winreg
+
     reg_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
     reg_name = "AllowDevelopmentWithoutDevLicense"
     reg_value = 0
