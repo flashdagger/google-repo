@@ -48,11 +48,11 @@ class SSHUnitTest(unittest.TestCase):
     """Check ssh_sock() function."""
     with mock.patch('tempfile.mkdtemp', return_value='/tmp/foo'):
       # old ssh version uses port
-      with mock.patch('git_command.ssh_version', return_value=(6, 6)):
+      with mock.patch('repo.git_command.ssh_version', return_value=(6, 6)):
         self.assertTrue(git_command.ssh_sock().endswith('%p'))
       git_command._ssh_sock_path = None
       # new ssh version uses hash
-      with mock.patch('git_command.ssh_version', return_value=(6, 7)):
+      with mock.patch('repo.git_command.ssh_version', return_value=(6, 7)):
         self.assertTrue(git_command.ssh_sock().endswith('%C'))
       git_command._ssh_sock_path = None
 

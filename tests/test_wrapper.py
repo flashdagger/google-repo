@@ -25,6 +25,7 @@ import shutil
 import tempfile
 import unittest
 
+from repo.platform_utils import isWindows
 from repo.pyversion import is_python3
 from repo import wrapper
 from repo import platform_utils
@@ -175,8 +176,13 @@ class RunCommand(RepoWrapperTestCase):
 
   def test_capture(self):
     """Check capture_output handling."""
-    ret = self.wrapper.run_command(['echo', 'hi'], capture_output=True)
-    self.assertEqual(ret.stdout, 'hi\n')
+    ret = self.wrapper.run_command(
+      ['echo', 'hi'],
+      shell=isWindows(),
+      capture_output=True,
+    )
+    expected = "hi\r\n" if isWindows() else "hi\n"
+    self.assertEqual(ret.stdout, expected)
 
   def test_check(self):
     """Check check handling."""
@@ -373,7 +379,7 @@ class GitCheckoutTestCase(RepoWrapperTestCase):
     if not cls.GIT_DIR:
       return
 
-    shutil.rmtree(cls.GIT_DIR)
+    shutil.rmtree(cls.GIT_DIR, ignore_errors=isWindows())
 
 
 class ResolveRepoRev(GitCheckoutTestCase):
