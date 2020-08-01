@@ -13,21 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 import errno
-
-from repo.pyversion import is_python3
-from ctypes import WinDLL, get_last_error, FormatError, WinError, addressof
-from ctypes import c_buffer
-from ctypes.wintypes import BOOL, BOOLEAN, LPCWSTR, DWORD, HANDLE
-from ctypes.wintypes import WCHAR, USHORT, LPVOID, ULONG
-if is_python3():
-  from ctypes import c_ubyte, Structure, Union, byref
-  from ctypes.wintypes import LPDWORD
-else:
-  # For legacy Python2 different imports are needed.
-  from ctypes.wintypes import POINTER, c_ubyte, Structure, Union, byref
-  LPDWORD = POINTER(DWORD)
+import sys
+import winreg
+from ctypes import FormatError, WinDLL, WinError, addressof, get_last_error
+from ctypes import Structure, Union, byref, c_ubyte
+from ctypes import c_buffer, windll
+from ctypes.wintypes import BOOL, BOOLEAN, DWORD, HANDLE, LPCWSTR
+from ctypes.wintypes import LPDWORD
+from ctypes.wintypes import LPVOID, ULONG, USHORT, WCHAR
 
 kernel32 = WinDLL('kernel32', use_last_error=True)
 
@@ -214,17 +208,41 @@ def readlink(path):
 
 
 def _preserve_encoding(source, target):
-  """Ensures target is the same string type (i.e. unicode or str) as source."""
-
-  if is_python3():
+    """Ensures target is the same string type (i.e. unicode or str) as source."""
     return target
-
-  if isinstance(source, unicode):  # noqa: F821
-    return unicode(target)  # noqa: F821
-  return str(target)
 
 
 def _raise_winerror(code, error_desc):
   win_error_desc = FormatError(code).strip()
   error_desc = "%s: %s".format(error_desc, win_error_desc)
   raise WinError(code, error_desc)
+
+
+def is_admin():
+    try:
+        return windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+
+def check_privileges():
+    if is_admin():
+        return
+
+    reg_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
+    reg_name = "AllowDevelopmentWithoutDevLicense"
+    reg_value = 0
+    try:
+        with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, reg_path) as key:
+            reg_value, _ = winreg.QueryValueEx(key, reg_name)
+    except(FileNotFoundError):
+        pass
+    finally:
+        if reg_value == 0:
+            print(
+                f"NOTE: Windows developer mode is disabled."
+                f" Therefore to create symlinks you need administrator privileges.\n"
+                f"      However, you can set 'HKLM\\{reg_path}\\{reg_name}' to 1 "
+                f"in the registry to enable it.",
+                file=sys.stderr
+            )

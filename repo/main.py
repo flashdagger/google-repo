@@ -35,6 +35,7 @@ import time
 from pathlib import Path
 from shutil import which
 
+from repo.platform_utils import isWindows
 from repo.pyversion import is_python3
 if is_python3():
   import urllib.request
@@ -57,7 +58,6 @@ from repo.git_config import init_ssh, close_ssh, RepoConfig
 from repo.command import InteractiveCommand
 from repo.command import MirrorSafeCommand
 from repo.command import GitcAvailableCommand, GitcClientCommand
-from repo.subcmds.version import Version
 from repo.editor import Editor
 from repo.error import DownloadError
 from repo.error import InvalidProjectGroupsError
@@ -596,35 +596,20 @@ def _MkRepoDir(repodir):
              % (repodir, e.strerror), file=sys.stderr)
       # Don't raise CloneFailure; that would delete the
       # name. Instead exit immediately.
-      #
       sys.exit(1)
 
 def _Main(argv):
   # on windows we need to locate the POSIX tools
-  if sys.platform.startswith("win"):
+  if isWindows():
+    from repo.platform_utils_win32 import check_privileges
+
+    check_privileges()
     git = which("git")
     assert git, "'git' command not found in Path"
     bin = Path(git).parents[1] / "usr/bin"
     if bin.exists() and str(bin) not in os.environ["PATH"]:
       os.environ["PATH"] += os.pathsep + str(bin)
-  if sys.platform.startswith("win"):
-    import winreg
 
-    reg_path = r"SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock"
-    reg_name = "AllowDevelopmentWithoutDevLicense"
-    reg_value = 0
-    try:
-      with winreg.OpenKey(winreg.HKEY_LOCAL_MACHINE, reg_path) as key:
-        reg_value, _ = winreg.QueryValueEx(key, reg_name)
-    except(FileNotFoundError):
-      pass
-    finally:
-      if reg_value == 0:
-        print(
-          "NOTE: Windows developer mode is disabled. Therefore to create symlinks you need administrator privileges.\n"
-          f"      However, you can set 'HKLM\\{reg_path}\\{reg_name}' to 1 to enable it.",
-          file=sys.stderr
-        )
 
   result = 0
   repodir = _FindRepo()
