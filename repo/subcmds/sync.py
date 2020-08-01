@@ -78,7 +78,7 @@ from repo.error import RepoChangedException, GitError, ManifestParseError
 from repo import platform_utils
 from repo.project import SyncBuffer
 from repo.progress import Progress
-from repo import wrapper
+from repo.wrapper import Wrapper
 from repo.manifest_xml import GitcManifest
 
 _ONE_DAY_S = 24 * 60 * 60

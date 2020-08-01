@@ -22,6 +22,8 @@ which takes care of execing this entry point.
 """
 
 from __future__ import print_function
+
+import errno
 import getpass
 import netrc
 import optparse
@@ -590,7 +592,7 @@ def _MkRepoDir(repodir):
     os.mkdir(repodir)
   except OSError as e:
     if e.errno != errno.EEXIST:
-      _print('fatal: cannot make %s directory: %s'
+      print('fatal: cannot make %s directory: %s'
              % (repodir, e.strerror), file=sys.stderr)
       # Don't raise CloneFailure; that would delete the
       # name. Instead exit immediately.

@@ -38,7 +38,7 @@ from repo.git_config import GitConfig, IsId, GetSchemeFromUrl, GetUrlCookieFile,
 from repo.error import GitError, HookError, UploadError, DownloadError
 from repo.error import ManifestInvalidRevisionError, ManifestInvalidPathError
 from repo.error import NoManifestException
-from repo import platform_utils
+from repo import platform_utils, progress
 from repo.trace import IsTrace, Trace
 
 from repo.git_refs import GitRefs, HEAD, R_HEADS, R_TAGS, R_PUB, R_M, R_WORKTREE_M
